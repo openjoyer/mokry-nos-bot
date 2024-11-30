@@ -1,7 +1,7 @@
-package com.tylerpants.mokrynos_bot.service;
+package com.tylerpants.mokrynos_bot.data.service;
 
-import com.tylerpants.mokrynos_bot.model.Animal;
-import com.tylerpants.mokrynos_bot.repository.AnimalRepository;
+import com.tylerpants.mokrynos_bot.data.model.Animal;
+import com.tylerpants.mokrynos_bot.data.repository.AnimalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

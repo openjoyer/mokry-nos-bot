@@ -1,6 +1,6 @@
 package com.tylerpants.mokrynos_bot.config;
 
-import com.tylerpants.mokrynos_bot.MedsBot;
+import com.tylerpants.mokrynos_bot.telegram.MedsBot;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;

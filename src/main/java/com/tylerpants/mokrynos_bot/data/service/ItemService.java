@@ -1,6 +1,6 @@
-package com.tylerpants.mokrynos_bot.service;
+package com.tylerpants.mokrynos_bot.data.service;
 
-import com.tylerpants.mokrynos_bot.repository.ItemsRepository;
+import com.tylerpants.mokrynos_bot.data.repository.ItemsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

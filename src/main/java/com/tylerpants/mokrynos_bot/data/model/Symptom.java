@@ -1,11 +1,10 @@
-package com.tylerpants.mokrynos_bot.model;
+package com.tylerpants.mokrynos_bot.data.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 

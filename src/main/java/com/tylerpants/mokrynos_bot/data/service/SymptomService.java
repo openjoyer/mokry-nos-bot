@@ -1,10 +1,9 @@
-package com.tylerpants.mokrynos_bot.service;
+package com.tylerpants.mokrynos_bot.data.service;
 
-import com.tylerpants.mokrynos_bot.model.Symptom;
-import com.tylerpants.mokrynos_bot.repository.SymptomRepository;
+import com.tylerpants.mokrynos_bot.data.model.Symptom;
+import com.tylerpants.mokrynos_bot.data.repository.SymptomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

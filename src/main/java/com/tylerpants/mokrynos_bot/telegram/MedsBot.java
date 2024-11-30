@@ -1,4 +1,4 @@
-package com.tylerpants.mokrynos_bot;
+package com.tylerpants.mokrynos_bot.telegram;
 
 import com.tylerpants.mokrynos_bot.config.BotConfig;
 import jakarta.validation.constraints.NotNull;
@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -93,7 +91,7 @@ public class MedsBot extends TelegramLongPollingBot implements BotCommands {
     private void startAction(Long chatId, String userName) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        sendMessage.setText("Привет, " + userName + "! Добро пожаловать в бота Мокрого носа! Пиши то что нужно ниже...");
+        sendMessage.setText("Привет, " + userName + "! Добро пожаловать в бота Мокрого носа! Выбирай то, что нужно, ниже...");
         sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup2());
 
         try {

@@ -1,9 +1,9 @@
-package com.tylerpants.mokrynos_bot;
+package com.tylerpants.mokrynos_bot.telegram;
 
-import com.tylerpants.mokrynos_bot.model.Animal;
-import com.tylerpants.mokrynos_bot.model.Symptom;
-import com.tylerpants.mokrynos_bot.service.AnimalService;
-import com.tylerpants.mokrynos_bot.service.SymptomService;
+import com.tylerpants.mokrynos_bot.data.model.Animal;
+import com.tylerpants.mokrynos_bot.data.model.Symptom;
+import com.tylerpants.mokrynos_bot.data.service.AnimalService;
+import com.tylerpants.mokrynos_bot.data.service.SymptomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -25,29 +25,6 @@ public class BotButtons {
         this.animalService = animalService;
         this.symptomService = symptomService;
     }
-//    public InlineKeyboardMarkup initKeyboardMarkup() {
-//        InlineKeyboardButton startButton = new InlineKeyboardButton("Старт");
-//        startButton.setCallbackData("/start");
-//
-//        InlineKeyboardButton helpButton = new InlineKeyboardButton("Помощь");
-//        helpButton.setCallbackData("/help");
-//
-//        InlineKeyboardButton animalButton = new InlineKeyboardButton("Выбор животного");
-//        animalButton.setCallbackData("/animals");
-//
-//        InlineKeyboardButton symptomButton = new InlineKeyboardButton("Выбор симптомов");
-//        symptomButton.setCallbackData("/symptoms");
-//
-//        List<InlineKeyboardButton> row1 = List.of(startButton, helpButton);
-//        List<InlineKeyboardButton> row2 = List.of(animalButton, symptomButton);
-//
-//        List<List<InlineKeyboardButton>> rowsInLine = List.of(row1, row2);
-//
-//        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-//        markupInline.setKeyboard(rowsInLine);
-//
-//        return markupInline;
-//    }
 
     public ReplyKeyboardMarkup initKeyboardMarkup2() {
         KeyboardButton startButton = new KeyboardButton("Старт");
