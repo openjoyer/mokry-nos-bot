@@ -7,15 +7,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Slf4j
 @Component
-public class MedsBot extends TelegramLongPollingBot implements BotCommands {
+public class MedsBot extends TelegramLongPollingBot {
 
     private final BotConfig botConfig;
     private final BotButtons botButtons;
@@ -24,56 +24,48 @@ public class MedsBot extends TelegramLongPollingBot implements BotCommands {
     public MedsBot(BotConfig botConfig, BotButtons botButtons) {
         this.botConfig = botConfig;
         this.botButtons = botButtons;
-
-        try {
-            this.execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
-        } catch (TelegramApiException e) {
-            log.error(e.getMessage());
-        }
     }
 
     @Override
     public void onUpdateReceived(@NotNull Update update) {
         Long chatId;
-        String userName;
-        String message;
-//        Integer messageId;
+        String text;
+        Integer messageId;
 
         if(update.hasCallbackQuery()) {
             chatId = update.getCallbackQuery().getMessage().getChatId();
-            userName = update.getCallbackQuery().getFrom().getFirstName();
-            message = update.getCallbackQuery().getData();
-//            messageId = Integer.parseInt(update.getCallbackQuery().getInlineMessageId());
+            text = update.getCallbackQuery().getData();
+            Message message = (Message) update.getCallbackQuery().getMessage();
+            messageId = message.getMessageId();
 
-            answer(chatId, message, userName);
+            answer(chatId, text, messageId);
         } else if(update.hasMessage()) {
             chatId = update.getMessage().getChatId();
-            userName = update.getMessage().getFrom().getFirstName();
-//            messageId = update.getMessage().getMessageId();
+            messageId = update.getMessage().getMessageId();
 
             if(update.getMessage().hasText()) {
-                message = update.getMessage().getText();
+                text = update.getMessage().getText();
 
-                answer(chatId, message, userName);
+                answer(chatId, text, messageId);
 
             }
         }
     }
 
 
-    private void answer(Long chatId, String message, String userName) {
+    private void answer(Long chatId, String message, Integer prevMessageId) {
         if (message.equals("/start") || (message.contains("Старт")) || (message.contains("Вернуться в меню"))) {
-            startAction(chatId, userName);
+            startAction(chatId);
         }
         else if (message.equals("/help") || message.contains("Помощь")) {
             helpAction(chatId);
         } else if (message.equals("/animals") || message.contains("Выбор животного")) {
             animalAction(chatId);
         } else if (message.equals("/symptoms") || message.contains("Выбор симптомов")) {
-            symptomId(chatId, 0);
+            symptomId(chatId, 0, -1);
         } else if (message.contains("to")) {
             int p = Integer.parseInt(message.split("\\s")[1]);
-            symptomId(chatId, p);
+            symptomId(chatId, p, prevMessageId);
         } else {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
@@ -88,10 +80,10 @@ public class MedsBot extends TelegramLongPollingBot implements BotCommands {
 
     }
 
-    private void startAction(Long chatId, String userName) {
+    private void startAction(Long chatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        sendMessage.setText("Привет, " + userName + "! Добро пожаловать в бота Мокрого носа! Выбирай то, что нужно, ниже...");
+        sendMessage.setText(BotConstants.START_TEXT);
         sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup2());
 
         try {
@@ -104,7 +96,7 @@ public class MedsBot extends TelegramLongPollingBot implements BotCommands {
     private void helpAction(Long chatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        sendMessage.setText(HELP_TEXT);
+        sendMessage.setText(BotConstants.HELP_TEXT);
         sendMessage.setReplyMarkup(botButtons.exitMarkup());
 
         try {
@@ -127,20 +119,20 @@ public class MedsBot extends TelegramLongPollingBot implements BotCommands {
         }
     }
 
-    private void symptomId(Long chatId, int p) {
+    private void symptomId(Long chatId, int p, Integer prevMessageId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setText("Выберите симптомы заболевания:");
         sendMessage.setReplyMarkup(botButtons.symptomTypeMarkup(p));
 
-//        if(p > 0) {
-//            DeleteMessage deleteMessage = new DeleteMessage(String.valueOf(chatId), prevMessageId);
-//            try {
-//                execute(deleteMessage);
-//            } catch (TelegramApiException e) {
-//                log.error(e.getMessage());
-//            }
-//        }
+        if (prevMessageId != -1) {
+            DeleteMessage deleteMessage = new DeleteMessage(String.valueOf(chatId), prevMessageId);
+            try {
+                execute(deleteMessage);
+            } catch (TelegramApiException e) {
+                log.error(e.getMessage());
+            }
+        }
 
         try {
             execute(sendMessage);
