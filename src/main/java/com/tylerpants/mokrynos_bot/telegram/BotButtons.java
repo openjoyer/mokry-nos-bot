@@ -27,10 +27,10 @@ public class BotButtons {
     }
 
     public ReplyKeyboardMarkup initKeyboardMarkup2() {
-        KeyboardButton startButton = new KeyboardButton("Старт");
-        KeyboardButton helpButton = new KeyboardButton("Помощь");
-        KeyboardButton animalButton = new KeyboardButton("Выбор животного");
-        KeyboardButton symptomButton = new KeyboardButton("Выбор симптомов");
+        KeyboardButton startButton = new KeyboardButton(BotConstants.START_BUTTON);
+        KeyboardButton helpButton = new KeyboardButton(BotConstants.HELP_BUTTON);
+        KeyboardButton animalButton = new KeyboardButton(BotConstants.ANIMAL_BUTTON);
+        KeyboardButton symptomButton = new KeyboardButton(BotConstants.SYMPTOM_BUTTON);
 
         KeyboardRow row1 = new KeyboardRow();
         row1.add(startButton);
@@ -80,6 +80,48 @@ public class BotButtons {
         return markup;
     }
 
+    public InlineKeyboardMarkup animalTypeMarkup(int p) {
+        List<Animal> list = animalService.findPageable(p);
+        int pagesCount = (int) (double) (animalService.count() / 3);
+
+        List<InlineKeyboardButton> rowInline = new ArrayList<>();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+
+        for(Animal a : list) {
+            InlineKeyboardButton button = new InlineKeyboardButton(a.getName());
+            button.setCallbackData("/animal "+a.getId());
+            rowInline.add(button);
+
+            if(rowInline.size() == 3) {
+                rowsInLine.add(rowInline);
+                rowInline = new ArrayList<>();
+            }
+        }
+        if(!rowInline.isEmpty()) {
+            rowsInLine.add(rowInline);
+        }
+
+        List<InlineKeyboardButton> pagesRow = new ArrayList<>();
+
+        if(p != 0) {
+            InlineKeyboardButton prevButton = new InlineKeyboardButton("←");
+            prevButton.setCallbackData("/ago " + (p - 1));
+            pagesRow.add(prevButton);
+        }
+
+        if(p < pagesCount) {
+            InlineKeyboardButton nextButton = new InlineKeyboardButton("→");
+            nextButton.setCallbackData("/ago " + (p + 1));
+            pagesRow.add(nextButton);
+        }
+
+        rowsInLine.add(pagesRow);
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+        markupInline.setKeyboard(rowsInLine);
+
+        return markupInline;
+    }
+
     public InlineKeyboardMarkup symptomTypeMarkup(int p) {
         List<Symptom> list = symptomService.findPageable(p);
         int pagesCount = (int) (double) (symptomService.count() / 3);
@@ -105,13 +147,13 @@ public class BotButtons {
 
         if(p != 0) {
             InlineKeyboardButton prevButton = new InlineKeyboardButton("←");
-            prevButton.setCallbackData("/to " + (p - 1));
+            prevButton.setCallbackData("/sgo " + (p - 1));
             pagesRow.add(prevButton);
         }
 
         if(p < pagesCount) {
             InlineKeyboardButton nextButton = new InlineKeyboardButton("→");
-            nextButton.setCallbackData("/to " + (p + 1));
+            nextButton.setCallbackData("/sgo " + (p + 1));
             pagesRow.add(nextButton);
         }
 
@@ -137,7 +179,7 @@ public class BotButtons {
     }
 
     private KeyboardRow exitRow() {
-        KeyboardButton exitButton = new KeyboardButton("Вернуться в меню");
+        KeyboardButton exitButton = new KeyboardButton(BotConstants.EXIT_BUTTON);
 
         KeyboardRow exitRow = new KeyboardRow();
         exitRow.add(exitButton);

@@ -27,4 +27,7 @@ public class SymptomService {
         return (int) symptomRepository.count();
     }
 
+    public Symptom findById(int id) {
+        return symptomRepository.findById(id).orElse(null);
+    }
 }
