@@ -8,6 +8,7 @@ import com.tylerpants.mokrynos_bot.data.service.ItemService;
 import com.tylerpants.mokrynos_bot.data.service.SymptomService;
 import jakarta.validation.constraints.NotNull;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,9 +20,18 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Slf4j
 @Component
 public class MedsBot extends TelegramLongPollingBot {
+
+//    @Getter
+//    private Set<Symptom> symptomFilterList;
+//
+//    @Getter
+//    private Set<Animal> animalFilterList;
 
     private final BotConfig botConfig;
     private final BotButtons botButtons;
@@ -42,6 +52,7 @@ public class MedsBot extends TelegramLongPollingBot {
         this.symptomService = symptomService;
         this.animalService = animalService;
         this.itemService = itemService;
+
     }
 
     @Override
@@ -98,7 +109,15 @@ public class MedsBot extends TelegramLongPollingBot {
 
         else if(message.contains("symptom")) {
             int symptomId = Integer.parseInt(message.split("\\s")[1]);
-            symptomChoiceAction(chatId, symptomId, prevMessageId);
+            if(symptomId == -1) {
+                allSymptomsChoiceAction(chatId, prevMessageId);
+            }
+            else {
+                symptomChoiceAction(chatId, symptomId, -1);
+            }
+        }
+        else if (message.contains(BotConstants.CONFIRM_BUTTON)) {
+            symptomChoiceAction(chatId, -1, prevMessageId);
         }
         else if (message.contains("sgo")) {
             int p = Integer.parseInt(message.split("\\s")[1]);
@@ -121,7 +140,7 @@ public class MedsBot extends TelegramLongPollingBot {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setText(BotConstants.START_TEXT);
-        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup2());
+        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup());
 
         try {
             execute(sendMessage);
@@ -134,7 +153,7 @@ public class MedsBot extends TelegramLongPollingBot {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setText(BotConstants.HELP_TEXT);
-        sendMessage.setReplyMarkup(botButtons.exitMarkup());
+        sendMessage.setReplyMarkup(botButtons.exitMarkup(false));
 
         try {
             execute(sendMessage);
@@ -171,15 +190,20 @@ public class MedsBot extends TelegramLongPollingBot {
     }
 
     private void transferAction(Long chatId, String messageText) {
+        boolean isAnimal = (messageText.equals("/animals") || messageText.contains(BotConstants.ANIMAL_BUTTON));
+        boolean isSymptom = messageText.equals("/symptoms") || messageText.contains(BotConstants.SYMPTOM_BUTTON);
+        boolean isHelp = messageText.equals("/help") || messageText.contains(BotConstants.HELP_BUTTON);
+
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        if(messageText.equals("/animals") || messageText.contains(BotConstants.ANIMAL_BUTTON) || messageText.equals("/symptoms") || messageText.contains(BotConstants.SYMPTOM_BUTTON)) {
+        if(isAnimal || isSymptom) {
             sendMessage.setText(BotConstants.ARROWS_ADVICE);
         }
-        else if (messageText.equals("/help") || messageText.contains(BotConstants.HELP_BUTTON)) {
+        else if (isHelp) {
             sendMessage.setText(BotConstants.HELP_ADVICE);
         }
-        sendMessage.setReplyMarkup(botButtons.exitMarkup());
+
+        sendMessage.setReplyMarkup(botButtons.exitMarkup(isSymptom));
 
         try {
             execute(sendMessage);
@@ -187,13 +211,13 @@ public class MedsBot extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
 
-        if (messageText.equals("/help") || messageText.contains(BotConstants.HELP_BUTTON)) {
+        if (isHelp) {
             helpAction(chatId);
         }
-        else if(messageText.equals("/animals") || messageText.contains(BotConstants.ANIMAL_BUTTON)) {
+        else if(isAnimal) {
             animalAction(chatId, 0, -1);
         }
-        else if (messageText.equals("/symptoms") || messageText.contains(BotConstants.SYMPTOM_BUTTON)) {
+        else if (isSymptom) {
             symptomAction(chatId, 0, -1);
         }
     }
@@ -223,21 +247,13 @@ public class MedsBot extends TelegramLongPollingBot {
         }
     }
 
-    private void symptomChoiceAction(Long chatId, int symptomId, int prevMessageId) {
+    private void allSymptomsChoiceAction(Long chatId, int prevMessageId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup2());
-        if (symptomId == -1) {
-            sendMessage.setText(BotConstants.CHOSEN + "Все симптомы");
-        }
-        else {
-            Symptom symptom = symptomService.findById(symptomId);
-            if (symptom != null) {
-                sendMessage.setText(BotConstants.CHOSEN + symptom.getName());
-            } else {
-                log.error("Symptom " + symptomId + " not found");
-            }
-        }
+        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup());
+        sendMessage.setText(BotConstants.CHOSEN + "Все симптомы");
+
+//        symptomFilterList = new HashSet<>(symptomService.findAll());
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
@@ -251,21 +267,52 @@ public class MedsBot extends TelegramLongPollingBot {
         }
     }
 
+    private void symptomChoiceAction(Long chatId, int symptomId, int prevMessageId) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+
+        if(prevMessageId == -1) {
+            Symptom symptom = symptomService.findById(symptomId);
+//            symptomFilterList.add(symptom);
+
+            sendMessage.setText(BotConstants.CHOSEN + symptom.getName());
+        }
+        else {
+            sendMessage.setText(BotConstants.FILTERS_APPLIED);
+            sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup());
+            DeleteMessage deleteMessage = new DeleteMessage();
+            deleteMessage.setChatId(chatId);
+            deleteMessage.setMessageId(prevMessageId);
+
+            try {
+                execute(deleteMessage);
+            } catch (TelegramApiException e) {
+                log.error(e.getMessage());
+            }
+        }
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void animalChoiceAction(Long chatId, int animalId, int prevMessageId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup2());
+        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup());
         if (animalId == -1) {
-            sendMessage.setText(BotConstants.CHOSEN + "Все животные");
+//            animalFilterList = new HashSet<>(animalService.findAll());
         }
         else {
             Animal animal = animalService.findById(animalId);
-            if (animal != null) {
-                sendMessage.setText(BotConstants.CHOSEN + animal.getName());
+            if(animal != null) {
+//                animalFilterList.add(animal);
             } else {
-                log.error("Animal " + animalId + " not found");
+                log.error("Animal" + animalId + " not found!");
             }
         }
+        sendMessage.setText(BotConstants.FILTERS_APPLIED);
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
