@@ -151,11 +151,15 @@ public class BotButtons {
         return markupInline;
     }
 
-    public ReplyKeyboardMarkup exitMarkup(boolean isConfirmButtonNeeded) {
+    public ReplyKeyboardMarkup exitMarkup(boolean isSymptomButtonsNeeded, boolean isFilterButtonNeeded) {
         List<KeyboardRow> rowsInLine = new ArrayList<>();
 
-        if(isConfirmButtonNeeded) {
-            rowsInLine.add(confirmRow());
+        if(isSymptomButtonsNeeded) {
+//            rowsInLine.add(confirmRow());
+//            rowsInLine.add(undoRow());
+        }
+        if (isFilterButtonNeeded) {
+            rowsInLine.add(filterClearRow());
         }
 
         rowsInLine.add(exitRow());
@@ -178,11 +182,27 @@ public class BotButtons {
         return exitRow;
     }
 
-    private KeyboardRow confirmRow() {
-        KeyboardButton confirmButton = new KeyboardButton(BotConstants.CONFIRM_BUTTON);
-        KeyboardRow confirmRow = new KeyboardRow();
-        confirmRow.add(confirmButton);
+//    private KeyboardRow undoRow() {
+//        KeyboardButton undoButton = new KeyboardButton(BotConstants.UNDO_BUTTON);
+//        KeyboardRow undoRow = new KeyboardRow();
+//        undoRow.add(undoButton);
+//
+//        return undoRow;
+//    }
 
-        return confirmRow;
+//    private KeyboardRow confirmRow() {
+//        KeyboardButton confirmButton = new KeyboardButton(BotConstants.CONFIRM_BUTTON);
+//        KeyboardRow confirmRow = new KeyboardRow();
+//        confirmRow.add(confirmButton);
+//
+//        return confirmRow;
+//    }
+
+    private KeyboardRow filterClearRow() {
+        KeyboardButton button = new KeyboardButton(BotConstants.CLEAR_FILTER);
+        KeyboardRow row = new KeyboardRow();
+        row.add(button);
+
+        return row;
     }
 }

@@ -2,8 +2,6 @@ package com.tylerpants.mokrynos_bot.data.service;
 
 import com.tylerpants.mokrynos_bot.data.model.Animal;
 import com.tylerpants.mokrynos_bot.data.model.FilterDataAnimal;
-import com.tylerpants.mokrynos_bot.data.model.FilterDataSymptom;
-import com.tylerpants.mokrynos_bot.data.model.Symptom;
 import com.tylerpants.mokrynos_bot.data.repository.FilterDataAnimalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,5 +36,10 @@ public class FilterDataAnimalService {
 
     public List<FilterDataAnimal> findByChatId(Long chatId) {
         return filterRepository.findAllByChatId(chatId);
+    }
+
+    @Transactional
+    public void removeAllByChatId(Long chatId) {
+        filterRepository.removeAllByChatId(chatId);
     }
 }

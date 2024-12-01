@@ -37,4 +37,9 @@ public class FilterDataSymptomService {
     public List<FilterDataSymptom> findByChatId(Long chatId) {
         return filterRepository.findAllByChatId(chatId);
     }
+
+    @Transactional
+    public void removeAllByChatId(Long chatId) {
+        filterRepository.removeAllByChatId(chatId);
+    }
 }

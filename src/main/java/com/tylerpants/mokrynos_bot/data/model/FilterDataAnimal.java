@@ -23,4 +23,9 @@ public class FilterDataAnimal {
     @ManyToOne
     @JoinColumn(name = "animal_id")
     private Animal animal;
+
+    @Override
+    public String toString() {
+        return animal.toString();
+    }
 }

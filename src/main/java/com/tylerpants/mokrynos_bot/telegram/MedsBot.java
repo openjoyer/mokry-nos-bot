@@ -2,6 +2,8 @@ package com.tylerpants.mokrynos_bot.telegram;
 
 import com.tylerpants.mokrynos_bot.config.BotConfig;
 import com.tylerpants.mokrynos_bot.data.model.Animal;
+import com.tylerpants.mokrynos_bot.data.model.FilterDataAnimal;
+import com.tylerpants.mokrynos_bot.data.model.FilterDataSymptom;
 import com.tylerpants.mokrynos_bot.data.model.Symptom;
 import com.tylerpants.mokrynos_bot.data.service.*;
 import jakarta.validation.constraints.NotNull;
@@ -16,6 +18,8 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageRe
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -82,16 +86,20 @@ public class MedsBot extends TelegramLongPollingBot {
         if (message.equals("/start") || (message.contains(BotConstants.START_BUTTON)) || (message.contains(BotConstants.EXIT_BUTTON))) {
             startAction(chatId);
         }
-        else if (message.equals("/filter") || message.contains(BotConstants.FILTER_BUTTON)) {
-            System.out.println("ДОДЕЛАТЬ!!!");
+        else if (message.equals("/help") || message.contains(BotConstants.HELP_BUTTON) ||
+                message.equals("/animals") || message.contains(BotConstants.ANIMAL_BUTTON) ||
+                message.equals("/symptoms") || message.contains(BotConstants.SYMPTOM_BUTTON) ||
+                message.equals("/filter") || message.contains(BotConstants.FILTER_BUTTON)) {
+            transferAction(chatId, message);
+        }
+//        else if (message.contains(BotConstants.UNDO_BUTTON)) {
+//            symptomUndoAction(chatId, prevMessageId);
+//        }
+        else if(message.contains(BotConstants.CLEAR_FILTER)) {
+            filterClearAction(chatId);
         }
         else if (message.equals("/search") || message.contains(BotConstants.SEARCH_BUTTON)) {
             System.out.println("ДОДЛЕАТЬ!!!!");
-        }
-        else if (message.equals("/help") || message.contains(BotConstants.HELP_BUTTON) ||
-                message.equals("/animals") || message.contains(BotConstants.ANIMAL_BUTTON) ||
-                message.equals("/symptoms") || message.contains(BotConstants.SYMPTOM_BUTTON)) {
-            transferAction(chatId, message);
         }
 
         else if (message.contains("animal")) {
@@ -107,9 +115,9 @@ public class MedsBot extends TelegramLongPollingBot {
             int symptomId = Integer.parseInt(message.split("\\s")[1]);
             symptomChoiceAction(chatId, symptomId, -1);
         }
-        else if (message.contains(BotConstants.CONFIRM_BUTTON)) {
-            symptomChoiceAction(chatId, -1, prevMessageId);
-        }
+//        else if (message.contains(BotConstants.CONFIRM_BUTTON)) {
+//            symptomChoiceAction(chatId, -1, prevMessageId);
+//        }
         else if (message.contains("sgo")) {
             int p = Integer.parseInt(message.split("\\s")[1]);
             symptomAction(chatId, p, prevMessageId);
@@ -144,7 +152,7 @@ public class MedsBot extends TelegramLongPollingBot {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setText(BotConstants.HELP_TEXT);
-        sendMessage.setReplyMarkup(botButtons.exitMarkup(false));
+        sendMessage.setReplyMarkup(botButtons.exitMarkup(false, false));
 
         try {
             execute(sendMessage);
@@ -180,13 +188,57 @@ public class MedsBot extends TelegramLongPollingBot {
 
     }
 
+    public void filterShowAction(Long chatId) {
+        var symptoms = filterDataSymptomService.findByChatId(chatId);
+        var animals = filterDataAnimalService.findByChatId(chatId);
+
+        String symptomsStr = (!symptoms.isEmpty()) ? (symptoms.toString().replaceAll("[\\[\\]]", " ")) : BotConstants.FILTERS_ARE_EMPTY;
+        String animalsStr = (!animals.isEmpty()) ? (animals.toString().replaceAll("[\\[\\]]", " ")) : BotConstants.FILTERS_ARE_EMPTY;
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(BotConstants.FILTER_ANIMAL + animalsStr + BotConstants.FILTER_SYMPTOM + symptomsStr);
+
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public void filterClearAction(Long chatId) {
+        clearAnimalFilters(chatId);
+        clearSymptomFilters(chatId);
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(BotConstants.FILTERS_REMOVED);
+        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup());
+
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private void clearAnimalFilters(Long chatId) {
+        filterDataAnimalService.removeAllByChatId(chatId);
+    }
+    private void clearSymptomFilters(Long chatId) {
+        filterDataSymptomService.removeAllByChatId(chatId);
+    }
+
     private void transferAction(Long chatId, String messageText) {
+        boolean isFilter = messageText.equals("/filter") || messageText.contains(BotConstants.FILTER_BUTTON);
         boolean isAnimal = (messageText.equals("/animals") || messageText.contains(BotConstants.ANIMAL_BUTTON));
         boolean isSymptom = messageText.equals("/symptoms") || messageText.contains(BotConstants.SYMPTOM_BUTTON);
         boolean isHelp = messageText.equals("/help") || messageText.contains(BotConstants.HELP_BUTTON);
 
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
+        if(isFilter) {
+            sendMessage.setText(BotConstants.FILTER_TEXT);
+        }
         if(isAnimal || isSymptom) {
             sendMessage.setText(BotConstants.ARROWS_ADVICE);
         }
@@ -194,7 +246,7 @@ public class MedsBot extends TelegramLongPollingBot {
             sendMessage.setText(BotConstants.HELP_ADVICE);
         }
 
-        sendMessage.setReplyMarkup(botButtons.exitMarkup(isSymptom));
+        sendMessage.setReplyMarkup(botButtons.exitMarkup(isSymptom, isFilter));
 
         try {
             execute(sendMessage);
@@ -204,8 +256,9 @@ public class MedsBot extends TelegramLongPollingBot {
 
         if (isHelp) {
             helpAction(chatId);
-        }
-        else if(isAnimal) {
+        } else if (isFilter) {
+            filterShowAction(chatId);
+        } else if(isAnimal) {
             animalAction(chatId, 0, -1);
         }
         else if (isSymptom) {
@@ -242,7 +295,7 @@ public class MedsBot extends TelegramLongPollingBot {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
 
-        if(prevMessageId == -1) {
+//        if(prevMessageId == -1) {
             Symptom symptom = symptomService.findById(symptomId);
 
             if(!filterDataSymptomService.add(chatId, symptom)) {
@@ -251,22 +304,42 @@ public class MedsBot extends TelegramLongPollingBot {
             else {
                 sendMessage.setText(BotConstants.CHOSEN + symptom.getName());
             }
-        }
-        else {
-            sendMessage.setText(BotConstants.FILTERS_APPLIED);
-            sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup());
-            DeleteMessage deleteMessage = new DeleteMessage();
-            deleteMessage.setChatId(chatId);
-            deleteMessage.setMessageId(prevMessageId);
-
-            try {
-                execute(deleteMessage);
-            } catch (TelegramApiException e) {
-                log.error(e.getMessage());
-            }
-        }
+//        }
+//        else {
+//            sendMessage.setText(BotConstants.FILTERS_APPLIED);
+//            sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup());
+//            DeleteMessage deleteMessage = new DeleteMessage();
+//            deleteMessage.setChatId(chatId);
+//            deleteMessage.setMessageId(prevMessageId);
+//
+//            try {
+//                execute(deleteMessage);
+//            } catch (TelegramApiException e) {
+//                log.error(e.getMessage());
+//            }
+//        }
         try {
             execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void symptomUndoAction(Long chatId, int prevMessageId) {
+        clearSymptomFilters(chatId);
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(BotConstants.UNDO_MESSAGE_TEXT);
+        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup());
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(prevMessageId);
+
+        try {
+            execute(sendMessage);
+            execute(deleteMessage);
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }

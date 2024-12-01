@@ -24,4 +24,9 @@ public class FilterDataSymptom {
     @ManyToOne
     @JoinColumn(name = "symptom_id")
     private Symptom symptom;
+
+    @Override
+    public String toString() {
+        return symptom.toString();
+    }
 }
