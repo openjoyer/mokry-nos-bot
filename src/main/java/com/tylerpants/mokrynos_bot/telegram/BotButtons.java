@@ -151,13 +151,9 @@ public class BotButtons {
         return markupInline;
     }
 
-    public ReplyKeyboardMarkup exitMarkup(boolean isSymptomButtonsNeeded, boolean isFilterButtonNeeded) {
+    public ReplyKeyboardMarkup exitMarkup(boolean isFilterButtonNeeded) {
         List<KeyboardRow> rowsInLine = new ArrayList<>();
 
-        if(isSymptomButtonsNeeded) {
-//            rowsInLine.add(confirmRow());
-//            rowsInLine.add(undoRow());
-        }
         if (isFilterButtonNeeded) {
             rowsInLine.add(filterClearRow());
         }
@@ -181,22 +177,6 @@ public class BotButtons {
 
         return exitRow;
     }
-
-//    private KeyboardRow undoRow() {
-//        KeyboardButton undoButton = new KeyboardButton(BotConstants.UNDO_BUTTON);
-//        KeyboardRow undoRow = new KeyboardRow();
-//        undoRow.add(undoButton);
-//
-//        return undoRow;
-//    }
-
-//    private KeyboardRow confirmRow() {
-//        KeyboardButton confirmButton = new KeyboardButton(BotConstants.CONFIRM_BUTTON);
-//        KeyboardRow confirmRow = new KeyboardRow();
-//        confirmRow.add(confirmButton);
-//
-//        return confirmRow;
-//    }
 
     private KeyboardRow filterClearRow() {
         KeyboardButton button = new KeyboardButton(BotConstants.CLEAR_FILTER);

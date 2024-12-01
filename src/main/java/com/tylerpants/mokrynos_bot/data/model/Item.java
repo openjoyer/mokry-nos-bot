@@ -18,13 +18,8 @@ public class Item {
     @Column(name = "name")
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "animal_type")
-    private Animal animalType;
-
-    @ManyToOne
-    @JoinColumn(name = "item_type")
-    private ItemType itemType;
+    @Column(name = "animals_arr")
+    private String animalsArr;
 
     @ManyToOne
     @JoinColumn(name = "symptoms")
@@ -32,4 +27,16 @@ public class Item {
 
     @Column(name = "description")
     private String description;
+
+    @Column(name = "catalog_link")
+    private String catalogLink;
+
+    @Override
+    public String toString() {
+        return "name='" + name + '\'' +
+                ", animalsArr='" + animalsArr + '\'' +
+                ", symptom=" + symptom +
+                ", description='" + description + '\'' +
+                ", catalogLink='" + catalogLink;
+    }
 }
