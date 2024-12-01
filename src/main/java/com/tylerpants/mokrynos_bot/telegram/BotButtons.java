@@ -26,7 +26,7 @@ public class BotButtons {
         this.symptomService = symptomService;
     }
 
-    public ReplyKeyboardMarkup initKeyboardMarkup2() {
+    public ReplyKeyboardMarkup initKeyboardMarkup() {
         KeyboardButton filterButton = new KeyboardButton(BotConstants.FILTER_BUTTON);
         KeyboardButton helpButton = new KeyboardButton(BotConstants.HELP_BUTTON);
         KeyboardButton animalButton = new KeyboardButton(BotConstants.ANIMAL_BUTTON);
@@ -48,35 +48,6 @@ public class BotButtons {
 
         ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
         markup.setKeyboard(rows);
-        markup.setSelective(true);
-        markup.setResizeKeyboard(true);
-        markup.setOneTimeKeyboard(true);
-
-        return markup;
-    }
-
-    public ReplyKeyboardMarkup animalTypeMarkup() {
-        List<Animal> list = animalService.findAll();
-
-        KeyboardRow rowInline = new KeyboardRow();
-        List<KeyboardRow> rowsInLine = new ArrayList<>();
-
-        for (Animal a : list) {
-            KeyboardButton button = new KeyboardButton(a.getName());
-            rowInline.add(button);
-
-            if(rowInline.size() == 3) {
-                rowsInLine.add(rowInline);
-                rowInline = new KeyboardRow();
-            }
-        }
-        if(!rowInline.isEmpty()) {
-            rowsInLine.add(rowInline);
-        }
-        rowsInLine.add(exitRow());
-
-        ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
-        markup.setKeyboard(rowsInLine);
         markup.setSelective(true);
         markup.setResizeKeyboard(true);
         markup.setOneTimeKeyboard(true);
@@ -180,10 +151,14 @@ public class BotButtons {
         return markupInline;
     }
 
-    public ReplyKeyboardMarkup exitMarkup() {
+    public ReplyKeyboardMarkup exitMarkup(boolean isConfirmButtonNeeded) {
         List<KeyboardRow> rowsInLine = new ArrayList<>();
-        rowsInLine.add(exitRow());
 
+        if(isConfirmButtonNeeded) {
+            rowsInLine.add(confirmRow());
+        }
+
+        rowsInLine.add(exitRow());
 
         ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
         markup.setKeyboard(rowsInLine);
@@ -201,5 +176,13 @@ public class BotButtons {
         exitRow.add(exitButton);
 
         return exitRow;
+    }
+
+    private KeyboardRow confirmRow() {
+        KeyboardButton confirmButton = new KeyboardButton(BotConstants.CONFIRM_BUTTON);
+        KeyboardRow confirmRow = new KeyboardRow();
+        confirmRow.add(confirmButton);
+
+        return confirmRow;
     }
 }
