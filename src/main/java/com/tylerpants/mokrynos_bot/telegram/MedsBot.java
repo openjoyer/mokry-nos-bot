@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -74,29 +75,30 @@ public class MedsBot extends TelegramLongPollingBot {
         if (message.equals("/start") || (message.contains(BotConstants.START_BUTTON)) || (message.contains(BotConstants.EXIT_BUTTON))) {
             startAction(chatId);
         }
+        else if (message.equals("/filter") || message.contains(BotConstants.FILTER_BUTTON)) {
+            System.out.println("ДОДЕЛАТЬ!!!");
+        }
+        else if (message.equals("/search") || message.contains(BotConstants.SEARCH_BUTTON)) {
+            System.out.println("ДОДЛЕАТЬ!!!!");
+        }
         else if (message.equals("/help") || message.contains(BotConstants.HELP_BUTTON) ||
                 message.equals("/animals") || message.contains(BotConstants.ANIMAL_BUTTON) ||
                 message.equals("/symptoms") || message.contains(BotConstants.SYMPTOM_BUTTON)) {
             transferAction(chatId, message);
         }
-//        else if (message.equals("/animals") || message.contains(BotConstants.ANIMAL_BUTTON)) {
-//            animalAction(chatId, 0, -1);
-//        }
+
         else if (message.contains("animal")) {
             int animalId = Integer.parseInt(message.split("\\s")[1]);
-            animalChoiceAction(chatId, animalId);
+            animalChoiceAction(chatId, animalId, prevMessageId);
         }
         else if(message.contains("ago")) {
             int p = Integer.parseInt(message.split("\\s")[1]);
             animalAction(chatId, p, prevMessageId);
         }
 
-//        else if (message.equals("/symptoms") || message.contains(BotConstants.SYMPTOM_BUTTON)) {
-//            symptomAction(chatId, 0, -1);
-//        }
         else if(message.contains("symptom")) {
             int symptomId = Integer.parseInt(message.split("\\s")[1]);
-            symptomChoiceAction(chatId, symptomId);
+            symptomChoiceAction(chatId, symptomId, prevMessageId);
         }
         else if (message.contains("sgo")) {
             int p = Integer.parseInt(message.split("\\s")[1]);
@@ -196,7 +198,7 @@ public class MedsBot extends TelegramLongPollingBot {
         }
     }
 
-    private void symptomAction(Long chatId, int p, Integer prevMessageId) {
+    private void symptomAction(Long chatId, int p, int prevMessageId) {
         if (prevMessageId == -1) {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
@@ -221,37 +223,59 @@ public class MedsBot extends TelegramLongPollingBot {
         }
     }
 
-    private void symptomChoiceAction(Long chatId, int symptomId) {
-        Symptom symptom = symptomService.findById(symptomId);
-        if(symptom != null) {
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(chatId);
-            sendMessage.setText(BotConstants.CHOSEN + symptom.getName());
-
-            try {
-                execute(sendMessage);
-            } catch (TelegramApiException e) {
-                log.error(e.getMessage());
+    private void symptomChoiceAction(Long chatId, int symptomId, int prevMessageId) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup2());
+        if (symptomId == -1) {
+            sendMessage.setText(BotConstants.CHOSEN + "Все симптомы");
+        }
+        else {
+            Symptom symptom = symptomService.findById(symptomId);
+            if (symptom != null) {
+                sendMessage.setText(BotConstants.CHOSEN + symptom.getName());
+            } else {
+                log.error("Symptom " + symptomId + " not found");
             }
-        } else {
-            log.error("Symptom "+ symptomId + " not found");
+        }
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(prevMessageId);
+
+        try {
+            execute(sendMessage);
+            execute(deleteMessage);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
         }
     }
 
-    private void animalChoiceAction(Long chatId, int animalId) {
-        Animal animal = animalService.findById(animalId);
-        if(animal != null) {
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(chatId);
-            sendMessage.setText(BotConstants.CHOSEN + animal.getName());
-
-            try {
-                execute(sendMessage);
-            } catch (TelegramApiException e) {
-                log.error(e.getMessage());
+    private void animalChoiceAction(Long chatId, int animalId, int prevMessageId) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup2());
+        if (animalId == -1) {
+            sendMessage.setText(BotConstants.CHOSEN + "Все животные");
+        }
+        else {
+            Animal animal = animalService.findById(animalId);
+            if (animal != null) {
+                sendMessage.setText(BotConstants.CHOSEN + animal.getName());
+            } else {
+                log.error("Animal " + animalId + " not found");
             }
-        } else {
-            log.error("Animal "+ animalId + " not found");
+        }
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId);
+        deleteMessage.setMessageId(prevMessageId);
+
+        try {
+            execute(sendMessage);
+            execute(deleteMessage);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
         }
     }
 

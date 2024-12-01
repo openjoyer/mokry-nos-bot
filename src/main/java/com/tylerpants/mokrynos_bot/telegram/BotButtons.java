@@ -27,20 +27,24 @@ public class BotButtons {
     }
 
     public ReplyKeyboardMarkup initKeyboardMarkup2() {
-        KeyboardButton startButton = new KeyboardButton(BotConstants.START_BUTTON);
+        KeyboardButton filterButton = new KeyboardButton(BotConstants.FILTER_BUTTON);
         KeyboardButton helpButton = new KeyboardButton(BotConstants.HELP_BUTTON);
         KeyboardButton animalButton = new KeyboardButton(BotConstants.ANIMAL_BUTTON);
         KeyboardButton symptomButton = new KeyboardButton(BotConstants.SYMPTOM_BUTTON);
+        KeyboardButton searchButton = new KeyboardButton(BotConstants.SEARCH_BUTTON);
 
         KeyboardRow row1 = new KeyboardRow();
-        row1.add(startButton);
+        row1.add(filterButton);
         row1.add(helpButton);
 
         KeyboardRow row2 = new KeyboardRow();
         row2.add(animalButton);
         row2.add(symptomButton);
 
-        List<KeyboardRow> rows = List.of(row1, row2);
+        KeyboardRow row3 = new KeyboardRow();
+        row3.add(searchButton);
+
+        List<KeyboardRow> rows = List.of(row1, row2, row3);
 
         ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
         markup.setKeyboard(rows);
@@ -87,6 +91,12 @@ public class BotButtons {
         List<InlineKeyboardButton> rowInline = new ArrayList<>();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
 
+        if(p == 0) {
+            InlineKeyboardButton anyButton = new InlineKeyboardButton("\uD83D\uDCCC Все");
+            anyButton.setCallbackData("/animal -1");
+            rowInline.add(anyButton);
+        }
+
         for(Animal a : list) {
             InlineKeyboardButton button = new InlineKeyboardButton(a.getName());
             button.setCallbackData("/animal "+a.getId());
@@ -128,6 +138,12 @@ public class BotButtons {
 
         List<InlineKeyboardButton> rowInline = new ArrayList<>();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+
+        if(p == 0) {
+            InlineKeyboardButton anyButton = new InlineKeyboardButton("\uD83D\uDCCC Все");
+            anyButton.setCallbackData("/symptom -1");
+            rowInline.add(anyButton);
+        }
 
         for (Symptom a : list) {
             InlineKeyboardButton button = new InlineKeyboardButton(a.getName());
