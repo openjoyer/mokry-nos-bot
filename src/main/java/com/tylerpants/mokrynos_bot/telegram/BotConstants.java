@@ -19,7 +19,7 @@ public class BotConstants {
 
     public static final String SYMPTOM_INFO = "Выбор Cимптомов заболевания";
 
-    public static final String CHOSEN = "Выбрано : ";
+    public static final String CHOSEN = "✅ Выбрано : ";
     public static final String START_BUTTON = "Старт";
     public static final String EXIT_BUTTON = "Вернуться в меню";
     public static final String HELP_BUTTON = "\uD83D\uDCA1 Помощь";
@@ -28,12 +28,13 @@ public class BotConstants {
     public static final String FILTER_BUTTON = "\uD83D\uDD27 Фильтры";
     public static final String SEARCH_BUTTON = "\uD83D\uDD0D Поиск";
 
-    public static final String CONFIRM_BUTTON = "✅ Подтвердить";
+    public static final String CONFIRM_BUTTON = "Подтвердить";
 
     public static final String ARROWS_ADVICE = "Листай позиции с помощью кнопок - стрелочек \uD83D\uDD3D";
 
     public static final String HELP_ADVICE = "⚡ Команды бота";
     public static final String FILTERS_APPLIED = "Фильтры применены";
+    public static final String ALREADY_CHOSEN = "❌ Уже выбрано : ";
 
 
 }

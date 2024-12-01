@@ -13,11 +13,12 @@ import lombok.Setter;
 @Setter
 public class FilterDataAnimal {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_data")
     private Integer id;
 
     @Column(name = "chat_id")
-    private Integer chatId;
+    private Long chatId;
 
     @ManyToOne
     @JoinColumn(name = "animal_id")

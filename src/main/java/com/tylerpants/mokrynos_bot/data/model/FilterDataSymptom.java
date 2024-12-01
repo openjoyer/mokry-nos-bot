@@ -14,11 +14,12 @@ import lombok.Setter;
 public class FilterDataSymptom {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_data")
     private Integer id;
 
     @Column(name = "chat_id")
-    private Integer chatId;
+    private Long chatId;
 
     @ManyToOne
     @JoinColumn(name = "symptom_id")

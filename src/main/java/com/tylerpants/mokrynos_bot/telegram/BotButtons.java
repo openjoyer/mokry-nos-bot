@@ -62,11 +62,11 @@ public class BotButtons {
         List<InlineKeyboardButton> rowInline = new ArrayList<>();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
 
-        if(p == 0) {
-            InlineKeyboardButton anyButton = new InlineKeyboardButton("\uD83D\uDCCC Все");
-            anyButton.setCallbackData("/animal -1");
-            rowInline.add(anyButton);
-        }
+//        if(p == 0) {
+//            InlineKeyboardButton anyButton = new InlineKeyboardButton("\uD83D\uDCCC Все");
+//            anyButton.setCallbackData("/animal -1");
+//            rowInline.add(anyButton);
+//        }
 
         for(Animal a : list) {
             InlineKeyboardButton button = new InlineKeyboardButton(a.getName());
@@ -110,11 +110,11 @@ public class BotButtons {
         List<InlineKeyboardButton> rowInline = new ArrayList<>();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
 
-        if(p == 0) {
-            InlineKeyboardButton anyButton = new InlineKeyboardButton("\uD83D\uDCCC Все");
-            anyButton.setCallbackData("/symptom -1");
-            rowInline.add(anyButton);
-        }
+//        if(p == 0) {
+//            InlineKeyboardButton anyButton = new InlineKeyboardButton("\uD83D\uDCCC Все");
+//            anyButton.setCallbackData("/symptom -1");
+//            rowInline.add(anyButton);
+//        }
 
         for (Symptom a : list) {
             InlineKeyboardButton button = new InlineKeyboardButton(a.getName());

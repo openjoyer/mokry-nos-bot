@@ -3,12 +3,9 @@ package com.tylerpants.mokrynos_bot.telegram;
 import com.tylerpants.mokrynos_bot.config.BotConfig;
 import com.tylerpants.mokrynos_bot.data.model.Animal;
 import com.tylerpants.mokrynos_bot.data.model.Symptom;
-import com.tylerpants.mokrynos_bot.data.service.AnimalService;
-import com.tylerpants.mokrynos_bot.data.service.ItemService;
-import com.tylerpants.mokrynos_bot.data.service.SymptomService;
+import com.tylerpants.mokrynos_bot.data.service.*;
 import jakarta.validation.constraints.NotNull;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,18 +17,13 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Slf4j
 @Component
 public class MedsBot extends TelegramLongPollingBot {
 
-//    @Getter
-//    private Set<Symptom> symptomFilterList;
-//
-//    @Getter
-//    private Set<Animal> animalFilterList;
+    private final FilterDataSymptomService filterDataSymptomService;
+
+    private final FilterDataAnimalService filterDataAnimalService;
 
     private final BotConfig botConfig;
     private final BotButtons botButtons;
@@ -43,10 +35,14 @@ public class MedsBot extends TelegramLongPollingBot {
     private final ItemService itemService;
 
     @Autowired
-    public MedsBot(BotConfig botConfig, BotButtons botButtons,
+    public MedsBot(FilterDataSymptomService filterDataSymptomService,
+                   FilterDataAnimalService filterDataAnimalService,
+                   BotConfig botConfig, BotButtons botButtons,
                    SymptomService symptomService,
                    AnimalService animalService,
                    ItemService itemService) {
+        this.filterDataSymptomService = filterDataSymptomService;
+        this.filterDataAnimalService = filterDataAnimalService;
         this.botConfig = botConfig;
         this.botButtons = botButtons;
         this.symptomService = symptomService;
@@ -109,12 +105,7 @@ public class MedsBot extends TelegramLongPollingBot {
 
         else if(message.contains("symptom")) {
             int symptomId = Integer.parseInt(message.split("\\s")[1]);
-            if(symptomId == -1) {
-                allSymptomsChoiceAction(chatId, prevMessageId);
-            }
-            else {
-                symptomChoiceAction(chatId, symptomId, -1);
-            }
+            symptomChoiceAction(chatId, symptomId, -1);
         }
         else if (message.contains(BotConstants.CONFIRM_BUTTON)) {
             symptomChoiceAction(chatId, -1, prevMessageId);
@@ -247,35 +238,19 @@ public class MedsBot extends TelegramLongPollingBot {
         }
     }
 
-    private void allSymptomsChoiceAction(Long chatId, int prevMessageId) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup());
-        sendMessage.setText(BotConstants.CHOSEN + "Все симптомы");
-
-//        symptomFilterList = new HashSet<>(symptomService.findAll());
-
-        DeleteMessage deleteMessage = new DeleteMessage();
-        deleteMessage.setChatId(chatId);
-        deleteMessage.setMessageId(prevMessageId);
-
-        try {
-            execute(sendMessage);
-            execute(deleteMessage);
-        } catch (TelegramApiException e) {
-            log.error(e.getMessage());
-        }
-    }
-
     private void symptomChoiceAction(Long chatId, int symptomId, int prevMessageId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
 
         if(prevMessageId == -1) {
             Symptom symptom = symptomService.findById(symptomId);
-//            symptomFilterList.add(symptom);
 
-            sendMessage.setText(BotConstants.CHOSEN + symptom.getName());
+            if(!filterDataSymptomService.add(chatId, symptom)) {
+                sendMessage.setText(BotConstants.ALREADY_CHOSEN + symptom.getName());
+            }
+            else {
+                sendMessage.setText(BotConstants.CHOSEN + symptom.getName());
+            }
         }
         else {
             sendMessage.setText(BotConstants.FILTERS_APPLIED);
@@ -301,19 +276,14 @@ public class MedsBot extends TelegramLongPollingBot {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setReplyMarkup(botButtons.initKeyboardMarkup());
-        if (animalId == -1) {
-//            animalFilterList = new HashSet<>(animalService.findAll());
+
+        Animal animal = animalService.findById(animalId);
+        if(!filterDataAnimalService.add(chatId, animal)) {
+            sendMessage.setText(BotConstants.ALREADY_CHOSEN + animal.getName());
         }
         else {
-            Animal animal = animalService.findById(animalId);
-            if(animal != null) {
-//                animalFilterList.add(animal);
-            } else {
-                log.error("Animal" + animalId + " not found!");
-            }
+            sendMessage.setText(BotConstants.FILTERS_APPLIED);
         }
-        sendMessage.setText(BotConstants.FILTERS_APPLIED);
-
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId);
         deleteMessage.setMessageId(prevMessageId);

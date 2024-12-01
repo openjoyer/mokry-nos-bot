@@ -12,6 +12,7 @@ import lombok.Setter;
 @Setter
 public class Item {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "name")

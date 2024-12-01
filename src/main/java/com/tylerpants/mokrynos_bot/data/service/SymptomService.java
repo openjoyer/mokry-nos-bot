@@ -20,6 +20,7 @@ public class SymptomService {
     }
 
     public List<Symptom> findPageable(int p) {
+//        p = (p == 0) ? 1 : p;
         return symptomRepository.findAll(PageRequest.of(p, 3)).getContent();
     }
 
