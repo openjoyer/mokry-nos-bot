@@ -62,12 +62,6 @@ public class BotButtons {
         List<InlineKeyboardButton> rowInline = new ArrayList<>();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
 
-//        if(p == 0) {
-//            InlineKeyboardButton anyButton = new InlineKeyboardButton("\uD83D\uDCCC Все");
-//            anyButton.setCallbackData("/animal -1");
-//            rowInline.add(anyButton);
-//        }
-
         for(Animal a : list) {
             InlineKeyboardButton button = new InlineKeyboardButton(a.getName());
             button.setCallbackData("/animal "+a.getId());
@@ -110,12 +104,6 @@ public class BotButtons {
         List<InlineKeyboardButton> rowInline = new ArrayList<>();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
 
-//        if(p == 0) {
-//            InlineKeyboardButton anyButton = new InlineKeyboardButton("\uD83D\uDCCC Все");
-//            anyButton.setCallbackData("/symptom -1");
-//            rowInline.add(anyButton);
-//        }
-
         for (Symptom a : list) {
             InlineKeyboardButton button = new InlineKeyboardButton(a.getName());
             button.setCallbackData("/symptom "+a.getId());
@@ -138,7 +126,7 @@ public class BotButtons {
             pagesRow.add(prevButton);
         }
 
-        if(p < pagesCount) {
+        if (p < pagesCount) {
             InlineKeyboardButton nextButton = new InlineKeyboardButton("→");
             nextButton.setCallbackData("/sgo " + (p + 1));
             pagesRow.add(nextButton);
@@ -149,6 +137,29 @@ public class BotButtons {
         markupInline.setKeyboard(rowsInLine);
 
         return markupInline;
+    }
+
+    public InlineKeyboardMarkup searchKeyboardMarkup(int count, int p) {
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        if (p != 0) {
+            InlineKeyboardButton prevButton = new InlineKeyboardButton("←");
+            prevButton.setCallbackData("/igo " + (p - 1));
+            row.add(prevButton);
+        }
+
+        if (p < count-1) {
+            InlineKeyboardButton nextButton = new InlineKeyboardButton("→");
+            nextButton.setCallbackData("/igo " + (p + 1));
+            row.add(nextButton);
+        }
+        rowsInLine.add(row);
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        markup.setKeyboard(rowsInLine);
+
+        return markup;
     }
 
     public ReplyKeyboardMarkup exitMarkup(boolean isFilterButtonNeeded) {

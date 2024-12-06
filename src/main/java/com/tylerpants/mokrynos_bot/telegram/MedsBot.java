@@ -12,6 +12,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -115,6 +116,10 @@ public class MedsBot extends TelegramLongPollingBot {
         else if (message.contains("sgo")) {
             int p = Integer.parseInt(message.split("\\s")[1]);
             symptomAction(chatId, p, prevMessageId);
+        }
+        else if (message.contains("igo")) {
+            int p = Integer.parseInt(message.split("\\s")[1]);
+            searchAction(chatId, p, prevMessageId);
         }
         else {
             SendMessage sendMessage = new SendMessage();
@@ -248,7 +253,7 @@ public class MedsBot extends TelegramLongPollingBot {
             sendMessage.setText(BotConstants.HELP_ADVICE);
         }
         else if(isSearch) {
-            sendMessage.setText("SOSAL");
+            sendMessage.setText(BotConstants.ITEMS_FOUND);
         }
 
         sendMessage.setReplyMarkup(botButtons.exitMarkup(isFilter));
@@ -277,36 +282,57 @@ public class MedsBot extends TelegramLongPollingBot {
     }
 
     private void searchAction(Long chatId, int p, int prevMessageId) {
-        List<Integer> animalIds = findAnimalFilters(chatId).stream().map(e -> e.getAnimal().getId()).toList();
+        String animalIds = findAnimalFilters(chatId).stream().map(e -> e.getAnimal().getId()).toList().toString().replaceAll("[\\[\\]]", "").replaceAll(" ", "");
 
         List<Integer> symptomIds = findSymptomFilters(chatId).stream().map(e -> e.getSymptom().getId()).toList();
 
-        List<Item> items = itemService.findAll();
-
-        if(animalIds.isEmpty() && symptomIds.isEmpty()) {
-            // не менять лист
-            System.out.println("PIZDA");
+        List<Item> items;
+        if(animalIds.isBlank() && symptomIds.isEmpty()) {
+            items = itemService.findNoFilters();
         }
         else {
-            List<Item> toRemove = new ArrayList<>();
-            for (Item i : items) {
-                List<Integer> selectedIds = Arrays.stream(i.getAnimalsArr().split(",")).map(Integer::parseInt).toList();
-                if (!selectedIds.equals(animalIds)) {
-                    toRemove.add(i);
-                }
+            items = itemService.findByFilters(animalIds, symptomIds);
+        }
+        Item item = items.get(p);
+        int count = items.size();
+
+        Symptom symptom = item.getSymptom();
+        List<Animal> animals = Arrays.stream(item.getAnimalsArr().replaceAll("[\\[\\]]", "").replaceAll(" ", "").split(",")).map(a -> animalService.findById(Integer.parseInt(a))).toList();
+
+        String text = BotConstants.createItemMessage(item.getName(), animals, symptom, item.getDescription(), item.getCatalogLink());
+
+        if(prevMessageId == -1) {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(chatId);
+            sendMessage.setText(text);
+            sendMessage.setReplyMarkup(botButtons.searchKeyboardMarkup(count, p));
+
+            try {
+                execute(sendMessage);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
             }
-            items.removeAll(toRemove);
+        }
+        else {
+
+            EditMessageText editMessageText = new EditMessageText();
+            editMessageText.setChatId(chatId);
+            editMessageText.setMessageId(prevMessageId);
+            editMessageText.setText(text);
+
+            EditMessageReplyMarkup editMessageReplyMarkup = new EditMessageReplyMarkup();
+            editMessageReplyMarkup.setMessageId(prevMessageId);
+            editMessageReplyMarkup.setChatId(chatId);
+            editMessageReplyMarkup.setReplyMarkup(botButtons.searchKeyboardMarkup(count, p));
+
+            try {
+                execute(editMessageText);
+                execute(editMessageReplyMarkup);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
         }
 
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        sendMessage.setText(String.valueOf(items.size()));
-
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private void symptomAction(Long chatId, int p, int prevMessageId) {

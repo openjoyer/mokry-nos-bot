@@ -1,5 +1,10 @@
 package com.tylerpants.mokrynos_bot.telegram;
 
+import com.tylerpants.mokrynos_bot.data.model.Animal;
+import com.tylerpants.mokrynos_bot.data.model.Symptom;
+
+import java.util.List;
+
 public class BotConstants {
     public static final String HELP_TEXT = """
             /start - Запустить бота
@@ -35,5 +40,18 @@ public class BotConstants {
     public static final String FILTERS_APPLIED = "✅ Фильтры применены";
     public static final String ALREADY_CHOSEN = "❌ Уже выбрано : ";
 
+    public static final String ITEMS_FOUND = "Найденные товары";
 
+    public static String createItemMessage(String name, List<Animal> animals, Symptom symptom, String description, String catalogLink) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(name).append("\n");
+        if (description != null && !description.isEmpty())
+            builder.append("Описание :").append(description).append("\n");
+        builder.append("Для кого: ").append(animals.stream().map(Animal::getName).toList().toString().replaceAll("[\\[\\]]", "")).append("\n");
+        builder.append("При симптоме: ").append(symptom.getName()).append("\n");
+        if (catalogLink != null && !catalogLink.isEmpty())
+            builder.append("Ссылка на товар: ").append(catalogLink);
+
+        return builder.toString();
+    }
 }

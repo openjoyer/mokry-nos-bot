@@ -18,7 +18,6 @@ public class AnimalService {
     }
 
     public List<Animal> findPageable(int p) {
-//        p = (p == 0) ? 1 : p;
         return animalRepository.findAll(PageRequest.of(p, 3)).getContent();
     }
 

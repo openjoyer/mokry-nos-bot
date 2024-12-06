@@ -14,12 +14,22 @@ import java.util.List;
 public class ItemService {
     private final ItemsRepository itemsRepository;
 
-    @Transactional
-    public List<Item> findAll() {
+    public List<Item> findNoFilters() {
         return itemsRepository.findAll();
     }
 
-    public List<Item> findByFilters() {
-        return null;
+    public List<Item> findByFilters(String animalsArr, List<Integer> symptoms) {
+        List<Item> list;
+
+        if(animalsArr.isBlank() && !symptoms.isEmpty()) {
+            list = itemsRepository.findAllBySymptom(symptoms);
+        } else if (!animalsArr.isBlank() && symptoms.isEmpty()) {
+
+            list = itemsRepository.findAllByAnimalsArr(animalsArr);
+        }
+        else {
+            list = itemsRepository.findAllByAnimalsArrAndSymptoms(animalsArr, symptoms);
+        }
+        return list;
     }
 }
