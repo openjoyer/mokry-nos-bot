@@ -40,7 +40,7 @@ public class BotConstants {
     public static final String FILTERS_APPLIED = "✅ Фильтры применены";
     public static final String ALREADY_CHOSEN = "❌ Уже выбрано : ";
 
-    public static final String ITEMS_FOUND = "Найденные товары";
+    public static final String ITEMS_FOUND = "✅ Найденные товары";
 
     public static String createItemMessage(String name, List<Animal> animals, Symptom symptom, String description, String catalogLink) {
         StringBuilder builder = new StringBuilder();
