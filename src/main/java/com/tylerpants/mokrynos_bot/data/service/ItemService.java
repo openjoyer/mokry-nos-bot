@@ -23,16 +23,6 @@ public class ItemService {
     public List<Item> findByFilters(String animalsArr, List<Integer> symptoms) {
         List<Item> list;
 
-//        if(animalsArr.isBlank() && !symptoms.isEmpty()) {
-//            list = itemsRepository.findAllBySymptom(symptoms);
-//        } else if (!animalsArr.isBlank() && symptoms.isEmpty()) {
-//
-//            list = itemsRepository.findAllByAnimalsArr(animalsArr);
-//        }
-//        else {
-//            list = itemsRepository.findAllByAnimalsArrAndSymptoms(animalsArr, symptoms);
-//        }
-
         if(animalsArr.isBlank() && !symptoms.isEmpty()) {
             list = itemsRepository.findAllBySymptom(symptoms);
         }
@@ -44,11 +34,10 @@ public class ItemService {
             }
             List<String> a = Arrays.stream(animalsArr.split(",")).toList();
 
-            for (Item i : list) {
-                if(!(new HashSet<>(Arrays.stream(i.getAnimalsArr().split(",")).toList()).containsAll(a))) {
-                    list.remove(i);
-                }
+            if(list.isEmpty()) {
+                return list;
             }
+            list.removeIf(i -> !(new HashSet<>(Arrays.stream(i.getAnimalsArr().split(",")).toList()).containsAll(a)));
         }
         return list;
     }

@@ -287,25 +287,33 @@ public class MedsBot extends TelegramLongPollingBot {
         List<Integer> symptomIds = findSymptomFilters(chatId).stream().map(e -> e.getSymptom().getId()).toList();
 
         List<Item> items;
+        String text;
         if(animalIds.isBlank() && symptomIds.isEmpty()) {
             items = itemService.findNoFilters();
         }
         else {
             items = itemService.findByFilters(animalIds, symptomIds);
         }
-        Item item = items.get(p);
         int count = items.size();
 
-        Symptom symptom = item.getSymptom();
-        List<Animal> animals = Arrays.stream(item.getAnimalsArr().replaceAll("[\\[\\]]", "").replaceAll(" ", "").split(",")).map(a -> animalService.findById(Integer.parseInt(a))).toList();
+        if(count == 0) {
+            text = BotConstants.ITEMS_NOT_FOUND;
+        }
+        else {
+            Item item = items.get(p);
+            Symptom symptom = item.getSymptom();
+            List<Animal> animals = Arrays.stream(item.getAnimalsArr().replaceAll("[\\[\\]]", "").replaceAll(" ", "").split(",")).map(a -> animalService.findById(Integer.parseInt(a))).toList();
 
-        String text = BotConstants.createItemMessage(item.getName(), animals, symptom, item.getDescription(), item.getCatalogLink());
+            text = BotConstants.createItemMessage(item.getName(), animals, symptom, item.getDescription(), item.getCatalogLink());
+        }
 
         if(prevMessageId == -1) {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
             sendMessage.setText(text);
-            sendMessage.setReplyMarkup(botButtons.searchKeyboardMarkup(count, p));
+            if(!items.isEmpty()) {
+                sendMessage.setReplyMarkup(botButtons.searchKeyboardMarkup(count, p));
+            }
 
             try {
                 execute(sendMessage);
