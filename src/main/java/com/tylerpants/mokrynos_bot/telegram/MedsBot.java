@@ -151,7 +151,6 @@ public class MedsBot extends TelegramLongPollingBot {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
         sendMessage.setText(BotConstants.HELP_TEXT);
-        sendMessage.setReplyMarkup(botButtons.exitMarkup(false));
 
         try {
             execute(sendMessage);
