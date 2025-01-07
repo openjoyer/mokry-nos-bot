@@ -12,17 +12,18 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class FilterDataAnimalService {
+public class FilterDataAnimalService implements FilterDataService<FilterDataAnimal, Animal> {
     private final FilterDataAnimalRepository filterRepository;
 
+    @Override
     @Transactional
     public boolean add(Long chatId, Animal animal) {
         if(filterRepository.existsByChatIdAndAnimal(chatId, animal)) {
             return false;
         }
-        if(animal.getId() == 0) {
-            filterRepository.removeAllByChatId(chatId);
-        }
+//        if(animal.getId() == 0) {
+//            filterRepository.removeAllByChatId(chatId);
+//        }
         else {
             filterRepository.removeFilterAllByChatId(chatId);
         }
@@ -34,10 +35,12 @@ public class FilterDataAnimalService {
         return true;
     }
 
+    @Override
     public List<FilterDataAnimal> findByChatId(Long chatId) {
         return filterRepository.findAllByChatId(chatId);
     }
 
+    @Override
     @Transactional
     public void removeAllByChatId(Long chatId) {
         filterRepository.removeAllByChatId(chatId);
